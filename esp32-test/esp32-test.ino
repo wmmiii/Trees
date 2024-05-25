@@ -37,7 +37,11 @@ void setup() {
 // FastLED.addLeds<P9813, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
   //     FastLED.addLeds<APA102, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
 // FastLED.addLeds<DOTSTAR, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
-// FastLED.setMaxPowerInVoltsAndMilliamps(4, 500);
+
+//This is where the power is regulated.  These pebble lights are kinda weird, so it will be some trial an error....
+FastLED.setMaxPowerInVoltsAndMilliamps(4, 1000);
+
+
 leds[0] = CRGB::Blue;
 FastLED.show();
 delay(500);
