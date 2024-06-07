@@ -3,21 +3,21 @@
 // colorful test pattern
 void testPattern() {
   for (int i = 0; i < NUM_LEDS; ++i) leds[i] = CRGB::Black; 
-  byte hue = 0;
-  if (masterhue >= 255) {
-    masterhue = 0;
+  byte _hue = 0;
+  if (masterHue >= 255) {
+    masterHue = 0;
   } else {
-    ++masterhue;
+    ++masterHue;
   }
-  hue = masterhue;
+  _hue = masterHue;
  
   for (int i=0;i<(NUM_LEDS)-offset; ++i) {
     if (i+offset < NUM_LEDS) {
-      leds[i+offset] = CHSV(hue, 255, 255);
-      if (hue >= 255) {
-        hue = 0;
+      leds[i+offset] = CHSV(_hue, 255, 255);
+      if (_hue >= 255) {
+        _hue = 0;
       } else {
-        ++hue;
+        ++_hue;
       }
     }
   }
@@ -41,7 +41,7 @@ void activate(int side) {
   //side = 1, 2, or 3 (it's the side of the tree that detected motion)
   //up from bottom of activated side to top and then down to bottom of 2 other sides
   //use 1/3 of the offset
-  for (i=60; i<floor(offset/3)+60; ++i) {
+  for (int i=60; i<floor(offset/3)+60; ++i) {
 
   }
 }
@@ -54,4 +54,6 @@ void activate(int side) {
 
 //tree strobe
 
+
+//colorful
 

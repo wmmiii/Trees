@@ -1,13 +1,31 @@
 #include <FastLED.h>
 
+#define TREE_NUMBER 1 //each tree is numbered in order based on where it is located
+
 #define NUM_LEDS 360 //?? LEDs per branch
 
 #define DATA_PIN 23
 #define CLOCK_PIN 18
 
+#define DEFAULT 0
+#define ACTIVATING 1
+#define ACTIVATED 2
+#define ROTATE 3
+#define SPARKLE 4
+#define STROBE 5
+#define COLORFUL 6
+#define FIRE 7
+
+int activeTimeout = 30000; //30 seconds to activate all the trees
+int treeState = 0; //0 is default blue spruce rest state
+int activeTime = 0;
+
+#define NUM_TREES 25
+bool forestState[NUM_TREES + 1]; //forestState[0] is the collective forest state
+
 CRGB leds[NUM_LEDS];
 int offset = 0;
-byte masterhue;
+byte masterHue;
 
 void setup() { 
 
@@ -19,7 +37,7 @@ void setup() {
   leds[0] = CRGB::Blue;
   FastLED.show();
   delay(500);
-  masterhue = 0;
+  masterHue = 0;
 }
 
 void loop() { 
@@ -38,7 +56,13 @@ void loop() {
 
   }
 
-  
+  //check for active timeout
+  if (treeState == ACTIVATED && millis() - activeTime > activeTimeout) {
+    //go back to inacctive
+    treeState = DEFAULT;
+    //should this tree state change be reported to other trees?
+
+  }
   
   //delay(1);
   
@@ -46,6 +70,11 @@ void loop() {
   if (offset>=NUM_LEDS) offset = 0;
 }
 
+void activate() {
+  activeTime = millis();
+  //check to see if over trees are all active
+
+}
 
 //A few ideas for color patterns and interactive games:
 // * 3 People, one on each side of tree.  Tree spins like the Wheel of Fortune wheel until it slows and lands on a winner.  Flashing light and marque to indicate winner.
