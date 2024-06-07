@@ -39,7 +39,7 @@ void setup() {
 // FastLED.addLeds<DOTSTAR, DATA_PIN, CLOCK_PIN, RGB>(leds, NUM_LEDS);
 
 //This is where the power is regulated.  These pebble lights are kinda weird, so it will be some trial an error....
-FastLED.setMaxPowerInVoltsAndMilliamps(4, 1000);
+ FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);
 
 
 leds[0] = CRGB::Blue;
@@ -47,7 +47,15 @@ FastLED.show();
 delay(500);
 masterhue = 0;
 }
+
+
 void loop() { 
+//Each loop 
+// *output 1 LED frame
+// *check for wifi communications
+// *check for sensor detection
+
+
 // // Turn the LED on, then pause
 // for(int i=0;i<NUM_LEDS;i++){
 //     leds[i] = CRGB::Red;
