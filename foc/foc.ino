@@ -23,6 +23,8 @@ int activeTimeout = 30000; //30 seconds to activate all the trees
 int treeState = 0; //0 is default blue spruce rest state
 int activeTime = 0;
 
+long clockOffset = 0;
+
 #define NUM_TREES 25
 bool forestState[NUM_TREES + 1]; //forestState[0] is the collective forest state
 
@@ -46,9 +48,15 @@ void setup() {
   FastLED.show();
   delay(500);
   masterHue = 0;
+
+  //set the clock offset
+  getClockOffset();
 }
 
 void loop() { 
+
+  //set the clock offset incase it isn't set
+  if (clockOffset == 0) getClockOffset();
 
   // *output 1 LED frame
   testPattern();
@@ -82,6 +90,10 @@ void activate() {
   activeTime = millis();
   //check to see if over trees are all active
 
+}
+
+long theClock() {
+  return millis() + clockOffset;
 }
 
 //A few ideas for color patterns and interactive games:

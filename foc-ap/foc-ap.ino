@@ -6,6 +6,17 @@
 // Load Wi-Fi library
 #include <WiFi.h>
 
+#define NUM_TREES 25
+bool forestState[NUM_TREES + 1]; //forestState[0] is the collective forest state
+unsigned char forestAction = 0;
+#define NONE 0
+#define STROBE 1
+#define COLORFADE 2
+#define COLORSOLID 3
+#define DESOLVE 4
+#define FIRE 5
+
+
 // Replace with your network credentials
 const char* ssid     = "Forest-of-Confusion";
 const char* password = "KS#g%46^OEe&=-";
@@ -139,5 +150,9 @@ void loop(){
     Serial.println("");
   }
 
-  server.on("/")
+  //server.on("/")
+  server.on("/clock", HTTP_GET, [](AsyncWebServerRequest *request){
+    request->send_P(200, "text/plain", millis().c_str());
+  });
+
 }

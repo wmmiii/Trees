@@ -18,6 +18,7 @@ bool gotSensor() {
   digitalWrite(TRIG_PIN, LOW);
 
   // Wait for pulse on echo pin
+  //TODO: need to put a timeout limit on this incase the sensor breaks of is dissconnected.
   while ( digitalRead(ECHO_PIN) == 0 );
 
   unsigned long t1; 
