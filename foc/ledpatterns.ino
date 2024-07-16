@@ -99,7 +99,7 @@ void gradientWipe() {
     long gradient = i / GRADIENT_SPEED + t / GRADIENT_SPEED;
 
     // Smash 'em together into one cool effect.
-    int h = (wipe + gradient) % 256;
+    int h = abs(wipe + gradient) % 256;
 
     leds[i] = CHSV(h, 255, VALUE);
   }
