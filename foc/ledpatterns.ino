@@ -57,3 +57,50 @@ void activate(int side) {
 
 //colorful
 
+
+//gradient wipe
+void gradientWipe() {
+  // A slow changing base gradient that is periodically "wiped" away with a
+  // gradient of a new set of hues.
+  // https://www.desmos.com/calculator/kbbzcf0hgr
+
+  // A value that is used to map each LED index onto a shifting gradient. Higher
+  // gives the LEDs a more uniform color.
+  // Range: [1, NUM_LED]
+  static int GRADIENT_SPREAD = 3;
+
+  // How quickly the base gradient changes. Lower is faster.
+  static int GRADIENT_SPEED = 30;
+
+  // How far the hue should jump on the wipe.
+  // Range: [0, 255]
+  static int WIPE_DISTANCE = 64;
+
+  // How frequently wipes occur where the number is the denominator of how often
+  // the tree should be wiping. For example: A value of 3 indicates that a wipe
+  // will be happening 1/3 of the time. The actual period time is specified by
+  // GRADIENT_SPEED.
+  static int WIPE_PERIOD = 3;
+  
+  // How fast the wipe moves across the tree. Lower is faster.
+  static int WIPE_SPEED = 20;
+
+  // The "value" of the HSV component.
+  // Range: [0, 255]
+  static int VALUE = 255;
+
+  long t = theClock();
+
+  for (int i=0;i<NUM_LEDS; ++i) {
+    // Calculate wipe effect.
+    long wipe = (i - t / WIPE_SPEED) / (NUM_LEDS * WIPE_PERIOD) * WIPE_DISTANCE;
+    
+    // Calculate base gradient.
+    long gradient = i / GRADIENT_SPEED + t / GRADIENT_SPEED;
+
+    // Smash 'em together into one cool effect.
+    int h = (wipe + gradient) % 256;
+
+    leds[i] = CHSV(h, 255, VALUE);
+  }
+}
