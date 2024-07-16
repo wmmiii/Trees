@@ -1,8 +1,10 @@
 #include <FastLED.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
 
 #define TREE_NUMBER 1 //each tree is numbered in order based on where it is located
 
-#define NUM_LEDS 360 //?? LEDs per branch
+#define NUM_LEDS 676 //?? LEDs per branch
 
 #define DATA_PIN 23
 #define CLOCK_PIN 18
@@ -42,7 +44,7 @@ void setup() {
   //  FastLED.addLeds<SK9822, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
 
   //This is where the power is regulated.  These pebble lights are kinda weird, so it will be some trial an error....
-  FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);
+  //FastLED.setMaxPowerInVoltsAndMilliamps(5, 1500);
 
   leds[0] = CRGB::Blue;
   FastLED.show();
