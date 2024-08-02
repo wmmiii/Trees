@@ -11,26 +11,34 @@ void testPattern() {
   }
   _hue = masterHue;
  
-  for (int i=0;i<(NUM_LEDS)-offset; ++i) {
-    if (i+offset < NUM_LEDS) {
-      leds[i+offset] = CHSV(_hue, 255, 255);
-      if (_hue >= 255) {
-        _hue = 0;
-      } else {
-        ++_hue;
-      }
+  // for (int i=0;i<(NUM_LEDS)-offset; ++i) {
+  //   if (i+offset < NUM_LEDS) {
+  //     leds[i+offset] = CHSV(_hue, 255, 255);
+  //     if (_hue >= 255) {
+  //       _hue = 0;
+  //     } else {
+  //       ++_hue;
+  //     }
+  //   }
+  // }
+  
+  for (int i=0;i<120; ++i) {
+      leds[i] = CRGB::Red;
+      leds[i+120] = CRGB::Blue;
+      leds[i+240] = CRGB::Green;
+      leds[random(360)] = CRGB::White;
     }
-  }
+  
 }
 
 //default blue spruce mode
-void bluespruce() {
+void blueSpruce() {
   for (int i=0;i<NUM_LEDS; ++i) {
     //the random blue tint is to make it shimmer
     if (random8(10)==1) {
-      leds[i] = CHSV(185, 192, 128); //blueish
+      leds[i] = CHSV(2, 255, 64); //blueish
     } else {
-      leds[i] = CHSV(167, 192, 128); //greenish
+      leds[i] = CHSV(47, 255, 64); //greenish
     }
     
   }
