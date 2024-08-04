@@ -208,7 +208,7 @@ void loop() {
 
 
 long theClock() {
-  return millis() + clockOffset;
+  return mesh.getNodeTime() / 1000;
 }
 
 //A few ideas for color patterns and interactive games:
