@@ -80,3 +80,10 @@ void clearForestActivity() {
 int nextState(long seed) {
   return (seed % FORESTPATTERENS) + 4 ;
 }
+
+boolean isValidNumber(String str){
+  for(byte i=0;i<str.length();i++) {
+    if(isDigit(str.charAt(i))) return true;
+  }
+  return false;
+}

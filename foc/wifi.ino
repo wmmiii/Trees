@@ -1,5 +1,3 @@
-// const char* serverClock = "http://192.168.4.1/clock";
-
 bool gotCommand() {
   //check to see if there's a command for this tree on the wifi buffer
   //if command {
@@ -10,26 +8,10 @@ bool gotCommand() {
 
 }
 
-// //sets global clockOffset
-// void getClockOffset() {
-//   // if(WiFi.status()== WL_CONNECTED ){ 
-//   //   String serverMillis = httpGETRequest(serverClock);
-//   //   if (isValidNumber(serverMillis)) {
-//   //     clockOffset =  serverMillis.toInt() - millis();
-//   //   }
-//   // } 
-// }
-
 void tellForest(String msg) {
   sendMessage(msg);
 }
 
-boolean isValidNumber(String str){
-  for(byte i=0;i<str.length();i++) {
-    if(isDigit(str.charAt(i))) return true;
-  }
-  return false;
-}
 
 void sendMessage(String status)
 {
@@ -40,6 +22,20 @@ void sendMessage(String status)
   // Serialize the message
   DynamicJsonDocument doc(1024);
   doc["status"] = status; 
+  String msg;
+  serializeJson(doc, msg); //
+  mesh.sendBroadcast( msg );
+  Serial.println("Message ");
+  Serial.println(msg);
+}
+
+void sendParty(int stateNumber) {
+  Serial.println("Announcing Party Mode");
+  
+  // Serialize the message
+  DynamicJsonDocument doc(1024);
+  doc["status"] = "PARTY"; 
+  doc["state"] = String(stateNumber);
   String msg;
   serializeJson(doc, msg); //
   mesh.sendBroadcast( msg );
@@ -91,6 +87,20 @@ void receivedCallback( uint32_t from, String &msg ) {
         Serial.printf("\nAdding");
       }
     }
+    if (doc["status"] == "PARTY") {
+      Serial.printf("\nPARTY %i", from);
+      ++partyCount;
+      if (partyCount > 1 && treeState < DRAW) {
+        String thisState = doc["state"];
+        if (isValidNumber(thisState)) {
+          int intState = thisState.toInt();
+          if (intState > DRAW && intState <= (FORESTPATTERENS + DRAW)) {
+            treeState = intState;
+            pullTime = millis();
+          }
+        }
+      }
+    }
   }
 }
 
@@ -135,29 +145,29 @@ void nodeTimeAdjustedCallback(int32_t offset) {
 }
 
 //not using
-String httpGETRequest(const char* serverName) {
-  WiFiClient client;
-  HTTPClient http;
+// String httpGETRequest(const char* serverName) {
+//   WiFiClient client;
+//   HTTPClient http;
     
-  // Your Domain name with URL path or IP address with path
-  http.begin(client, serverName);
+//   // Your Domain name with URL path or IP address with path
+//   http.begin(client, serverName);
   
-  // Send HTTP POST request
-  int httpResponseCode = http.GET();
+//   // Send HTTP POST request
+//   int httpResponseCode = http.GET();
   
-  String payload = "--"; 
+//   String payload = "--"; 
   
-  if (httpResponseCode>0) {
-    Serial.print("HTTP Response code: ");
-    Serial.println(httpResponseCode);
-    payload = http.getString();
-  }
-  else {
-    Serial.print("Error code: ");
-    Serial.println(httpResponseCode);
-  }
-  // Free resources
-  http.end();
+//   if (httpResponseCode>0) {
+//     Serial.print("HTTP Response code: ");
+//     Serial.println(httpResponseCode);
+//     payload = http.getString();
+//   }
+//   else {
+//     Serial.print("Error code: ");
+//     Serial.println(httpResponseCode);
+//   }
+//   // Free resources
+//   http.end();
 
-  return payload;
-}
+//   return payload;
+// }

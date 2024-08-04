@@ -65,26 +65,15 @@ void testPattern() {
     ++masterHue;
   }
   _hue = masterHue;
- 
-  // for (int i=0;i<(NUM_LEDS)-offset; ++i) {
-  //   if (i+offset < NUM_LEDS) {
-  //     leds[i+offset] = CHSV(_hue, 255, 255);
-  //     if (_hue >= 255) {
-  //       _hue = 0;
-  //     } else {
-  //       ++_hue;
-  //     }
-  //   }
-  // }
   
   for (int i=0;i<120; ++i) {
-      leds[i] = CRGB::Red;
-      leds[i+120] = CRGB::Blue;
-      leds[i+240] = CRGB::Green;
-      leds[random(360)] = CRGB::White;
+      leds[i] = CHSV(0, 255, 32); 
+      leds[i+120] = CHSV(160, 255, 32); 
+      leds[i+240] = CHSV(96, 255, 32); 
+      // leds[random(360)] = CRGB::White;
     }
-  
 }
+
 
 //default blue spruce mode
 void blueSpruce() {
@@ -107,19 +96,23 @@ void darkForest() {
   }
 }
 
-//activate
-void activate(int side) {
-  //side = 1, 2, or 3 (it's the side of the tree that detected motion)
-  //up from bottom of activated side to top and then down to bottom of 2 other sides
-  //use 1/3 of the offset
-  for (int i=60; i<floor(offset/3)+60; ++i) {
-
-  }
-}
-
 //tree rotate
 void patternRotate() {
-
+  for (int i = 0; i < NUM_LEDS; ++i) leds[i] = CRGB::Black; 
+  byte _hue = 0;
+  if (masterHue >= 255) {
+    masterHue = 0;
+  } else {
+    ++masterHue;
+  }
+  _hue = masterHue;
+  
+  for (int i=0;i<120; ++i) {
+      leds[i] = CHSV((theClock()/20)%256,255,255);
+      leds[i+120] = CHSV((theClock()/20+83)%256,255,255);
+      leds[i+240] = CHSV((theClock()/20+166)%256,255,255);
+      leds[random(360)] = CRGB::White;
+    }
 }
 
 //sparkle
@@ -134,31 +127,45 @@ void patternSparkle() {
 
 //tree strobe
 void patternStrobe() {
-  for (int i=0;i<NUM_LEDS; ++i) {
-      leds[i] = CRGB::Black; 
+  if (random8(100) == 1 && patternTime == 0) {
+    patternTime = millis();
   }
-  if (random8(100) == 1) {
+  if (millis() > patternTime + 200) {
+    patternTime = 0;
+  }
+  if (patternTime > 0) {
     for (int i=0;i<NUM_LEDS; ++i) {
       leds[i] = CRGB::White; 
+    }
+  } else {
+    for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::Black; 
     }
   }
 }
 
 //colorful
 void patternColorful() {
-  for (int i=0;i<NUM_LEDS; ++i) {
-      leds[i] = CRGB::Black; 
+  if (random8(100) == 1 && patternTime == 0) {
+    patternTime = millis();
   }
-  if (random8(100) == 1) {
+  if (millis() > patternTime + 200) {
+    patternTime = 0;
+  }
+  if (patternTime > 0) {
     for (int i=0;i<NUM_LEDS; ++i) {
       leds[i] = CHSV(random8(), 255, 255); 
+    }
+  } else {
+    for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::Black; 
     }
   }
 }
 
 //fire
 void patternFire(){
-
+  patternStrobe(); //untill we have something here
 }
 
 //gradient wipe

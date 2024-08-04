@@ -59,6 +59,8 @@ long forestLastAlive[NUM_TREES]; //millis of the last time we heard from each tr
 CRGB leds[NUM_LEDS];
 int offset = 0;
 byte masterHue;
+long patternTime = 0;
+int partyCount = 0;
 
 void setup() { 
 
@@ -146,6 +148,7 @@ void loop() {
       treeState = nextState(seed); //this function will know what to do
       Serial.println("Start Party");
       Serial.println(treeState);
+      sendParty(treeState);
       pullTime = millis();
     }
     //shut down after 30 seconds
@@ -172,6 +175,8 @@ void loop() {
   //check to see if the forest is active every 500ms
   if (millis() - lastCheckForest > 500) {
     checkForest();
+    //also decay party count
+    if (partyCount > 0) --partyCount;
     lastCheckForest = millis();
   }
 
@@ -213,7 +218,7 @@ void loop() {
       if (treeState == ACTIVATING) treeState = DEFAULT;
     }
     //expire activation
-    if (treeState == ACTIVATED && lastActiveTime < millis() - 3000) {
+    if (treeState == ACTIVATED && lastActiveTime < millis() - 5000) {
       treeState = DEFAULT;
       tellForest("DEACTIVATED");
       forestState[1]=false;
