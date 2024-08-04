@@ -21,11 +21,14 @@ painlessMesh  mesh;
 #define DEFAULT 0
 #define ACTIVATING 1
 #define ACTIVATED 2
-#define ROTATE 3
-#define SPARKLE 4
-#define STROBE 5
-#define COLORFUL 6
-#define FIRE 7
+#define DRAW 3
+#define ROTATE 4
+#define SPARKLE 5
+#define STROBE 6
+#define COLORFUL 7
+#define FIRE 8
+#define GRADIENTWIPE 9
+#define FORESTPATTERENS 6
 
 #define TRIG_PIN1 13
 #define TRIG_PIN2 14
@@ -36,13 +39,18 @@ painlessMesh  mesh;
 
 int activeTimeout = 10000; //10 seconds to activate all the trees
 int treeState = 0; //0 is default blue spruce rest state
-int activeTime = 0;
+long startActiveTime = 0;
+long lastActiveTime = 0;
+int activeSensor = 1;  //must be 1, 2, or 3
+long pullTime = 0;
 
 long clockOffset = 0;
 long lastSensor = 0;
 
 #define NUM_TREES 25
 bool forestState[NUM_TREES + 1]; //forestState[0] is the collective forest state
+long forestNodes[NUM_TREES];  //keep a table of the mesh node ids
+long forestLastAlive[NUM_TREES]; //millis of the last time we heard from each tree
 
 CRGB leds[NUM_LEDS];
 int offset = 0;
@@ -76,6 +84,13 @@ void setup() {
   mesh.onNodeTimeAdjusted(&nodeTimeAdjustedCallback);
   mesh.initOTAReceive("TREE");
 
+  //init our forest arrays
+  for (int i = 0; i < NUM_TREES; ++i) {
+    forestState[i] = false;
+    forestNodes[i] = 0;
+    forestLastAlive[i] = 0;
+  }
+  forestState[NUM_TREES] = false; //one extra in this guy
 
   leds[0] = CRGB::Blue;
   FastLED.show();
@@ -93,14 +108,48 @@ void loop() {
   //set the clock offset incase it isn't set
   if (clockOffset == 0) getClockOffset();
 
-  // *output 1 LED frame
-  if (treeState <= 1) blueSpruce();
-  if (treeState == 2) testPattern();
+  // LED pattern 
+  if (millis() < 1000 * 60 * 15) testPattern(); //first 15 seconds
+  if (treeState <= ACTIVATING) blueSpruce();
+  if (treeState == ACTIVATED) activePattern();
+  if (treeState == DRAW) darkForest();
+
+  if (treeState == ROTATE) patternRotate();
+  if (treeState ==  SPARKLE) patternSparkle();
+  if (treeState ==  STROBE) patternStrobe();
+  if (treeState == COLORFUL) patternColorful();
+  if (treeState == FIRE) patternFire();
+  if (treeState == GRADIENTWIPE) gradientWipe();
+
   FastLED.show();
 
   // *check for wifi communications
   if (gotCommand()) {
 
+  }
+
+  //trigger activation on 5 second network time
+  long meshTime = mesh.getNodeTime();
+  if (meshTime % 10000000 && pullTime > millis() - 5000) {
+    if (treeState == DRAW) {
+      //activate
+      treeState = nextState(meshTime); //this function will know what to do
+    }
+  }
+
+  //brodcast IMATREE every 120 seconds
+  if (millis() % 120000 == 0) {
+    ImAlive();
+  }
+
+  //prune forest every 5 minutes
+  if (millis() % 300000 == 0) {
+    pruneForest();
+  }
+
+  //check to see if the forest is active every 500ms
+  if (millis() % 500 == 0) {
+    checkForest();
   }
 
   // *check for sensor detection every 200ms
@@ -110,14 +159,17 @@ void loop() {
       Serial.print("Sensor ");
       if (sensors > 3) {
         Serial.print(" 3");
+        activeSensor = 3;
         sensors -= 4;
       }
       if (sensors > 1) {
         Serial.print(" 2");
+        activeSensor = 2;
         sensors -= 2;
       }
       if (sensors == 1) {
         Serial.print(" 1");
+        activeSensor = 1;
       }
       Serial.println(" ");
  
@@ -126,9 +178,10 @@ void loop() {
       } else if (treeState == ACTIVATING) {
         treeState = ACTIVATED;
         tellForest("ACTIVATED");
-        activeTime = millis();
+        startActiveTime = millis();
+        lastActiveTime = millis();
       } else {
-        activeTime = millis();
+        lastActiveTime = millis();
       }
 
     } else {
@@ -139,7 +192,7 @@ void loop() {
   }
 
   //check for active timeout
-  if (treeState == ACTIVATED && millis() - activeTime > activeTimeout) {
+  if (treeState == ACTIVATED && millis() - lastActiveTime > activeTimeout) {
     //go back to inacctive
     treeState = DEFAULT;
     tellForest("DEACTIVATED");

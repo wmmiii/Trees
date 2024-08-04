@@ -1,6 +1,45 @@
+//legs 60 LEDs down each
+// 1||2 3||4 5||6
+//     1    2    3
 
+void activePattern() {
+  if (startActiveTime < 3000) {
+    //start with a base coat of the default blue spruce
+    blueSpruce();
+    //layer on growing up the tree for 3 seconds on the activated side
+    //do the grow up tree routine
+    for (int i = 0; i < startActiveTime / 50; ++i) {
+      if (activeSensor == 1 ||  activeSensor == 2) {
+        leds[i+120] = CHSV(floor(256/60) * i, 255,255); //branch 3
+        leds[239-i] = CHSV(floor(256/60) * i, 255,255); //branch 4
+      }
+      if (activeSensor == 3 ||  activeSensor == 1) {
+        leds[i] = CHSV(floor(256/60) * i, 255,255); //branch 1
+        leds[119-i] = CHSV(floor(256/60) * i, 255,255); //branch 2
+      }
+      if (activeSensor == 2 ||  activeSensor == 3) {
+        leds[i+240] = CHSV(floor(256/60) * i, 255,255); //branch 5
+        leds[359-i] = CHSV(floor(256/60) * i, 255,255); //branch 6
+      }
+      if (random8(10) == 1) leds[i] = CRGB::White; //twinkle the leading LED
+    }
+  } else {
+    //what do we do after fully active?
+    //color wash (offset steps every 3/60 seconds: 50,000 microseconds)
+    //by using getNodeTime() all the trees will have their patterns in sync
+    int offest = (mesh.getNodeTime() / 50000L) % 60; 
+    for (int i = 0; i < 60; ++i) {
+      leds[i+120] = CHSV(floor(256/60) * offset, 255,255); //branch 3
+      leds[239-i] = CHSV(floor(256/60) * offset, 255,255); //branch 4
+      leds[i] = CHSV(floor(256/60) * offset, 255,255); //branch 1
+      leds[119-i] = CHSV(floor(256/60) * offset, 255,255); //branch 2
+      leds[i+240] = CHSV(floor(256/60) * offset, 255,255); //branch 5
+      leds[359-i] = CHSV(floor(256/60) * offset, 255,255); //branch 6
+    }
+  }
+}
 
-// colorful test pattern
+// colorful test pattern, different color for each leg for orentation and LED check
 void testPattern() {
   for (int i = 0; i < NUM_LEDS; ++i) leds[i] = CRGB::Black; 
   byte _hue = 0;
@@ -36,11 +75,19 @@ void blueSpruce() {
   for (int i=0;i<NUM_LEDS; ++i) {
     //the random blue tint is to make it shimmer
     if (random8(10)==1) {
-      leds[i] = CHSV(2, 255, 64); //blueish
+      leds[i] = CHSV(2, 255, 32); //blueish
     } else {
-      leds[i] = CHSV(47, 255, 64); //greenish
+      leds[i] = CHSV(47, 255, 32); //greenish
     }
     
+  }
+}
+
+//all off
+void darkForest() {
+  //probably a sexy little command for this but I don't know it
+  for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::Black; 
   }
 }
 
@@ -55,16 +102,48 @@ void activate(int side) {
 }
 
 //tree rotate
+void patternRotate() {
 
+}
 
 //sparkle
-
+void patternSparkle() {
+  for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::Black; 
+      if (random8(100) == 1) {
+        leds[i] = CRGB::White;
+      }
+  }
+}
 
 //tree strobe
-
+void patternStrobe() {
+  for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::Black; 
+  }
+  if (random8(100) == 1) {
+    for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::White; 
+    }
+  }
+}
 
 //colorful
+void patternColorful() {
+  for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CRGB::Black; 
+  }
+  if (random8(100) == 1) {
+    for (int i=0;i<NUM_LEDS; ++i) {
+      leds[i] = CHSV(random8(), 255, 255); 
+    }
+  }
+}
 
+//fire
+void patternFire(){
+
+}
 
 //gradient wipe
 void gradientWipe() {

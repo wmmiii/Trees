@@ -36,8 +36,6 @@ void sendMessage(String status)
   
   Serial.println();
   Serial.println("Start Sending....");
-
-  Serial.println("Blah blah blah");
   
   // Serialize the message
   DynamicJsonDocument doc(1024);
@@ -62,18 +60,62 @@ void receivedCallback( uint32_t from, String &msg ) {
     Serial.println(error.c_str());
   } else {
     if (doc["status"] == "ACTIVATED") {
-      Serial.println("** ACTIVATED **");
-      treeState = ACTIVATED;
-      activeTime = millis();
+      uint32_t treeNumber = from; //TODO
+      if (treeNumber > 0 && treeNumber <= 25) {
+        Serial.printf("Tree Activated: %d\n", treeNumber);
+        forestState[treeNumber] = true;
+        // checkForest();
+      }
+      // treeState = ACTIVATED;
+      // activeTime = millis();
     }
     if (doc["status"] == "DEACTIVATED") {
-      Serial.println("** DEACTIVATED **");
+      //get the ID of the node sending the data and translate that to the tree index
+      uint32_t treeNumber = from; //TODO
+      if (treeNumber > 0 && treeNumber <= 25) {
+        Serial.printf("Tree Deactivated: %d\n", treeNumber);
+        forestState[treeNumber] = false;
+        // checkForest();
+      }
+    }
+    if (doc["status"] == "IMATREE") {
+      //tree checking in to say they alive
+      int theTree = getTreeIndexByNodeId(from);
+      if (theTree < NUM_TREES) {
+        forestLastAlive[theTree] = millis();
+      }
     }
   }
 }
 
+void ImAlive(){
+  //send IMATREE
+  sendMessage("IMATREE");
+}
+
+
+
 void newConnectionCallback(uint32_t nodeId) {
   Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
+  //a tree has connected
+  //do we already have this tree in the node table?
+  bool gotTree = false;
+  int nextSlot = NUM_TREES + 1;
+  for (int i = 0; i < NUM_TREES; ++i){
+    if (forestNodes[i] == nodeId) {
+      //already have it, just update last alive time
+      forestLastAlive[i] = millis();
+      gotTree = true;
+    } 
+    //check for the next empty slot
+    if (forestNodes[i] == 0 && nextSlot < NUM_TREES) {
+      nextSlot = i;
+    }
+    if (!gotTree) {
+      //new tree, welcome to the forest
+      forestNodes[nextSlot] = nodeId;
+    }
+  }
 }
 void changedConnectionCallback() {
   Serial.printf("Changed connections\n");
