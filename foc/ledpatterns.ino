@@ -3,12 +3,12 @@
 //     1    2    3
 
 void activePattern() {
-  if (startActiveTime < 3000) {
+  if (millis() - startActiveTime < 3000) {
     //start with a base coat of the default blue spruce
     blueSpruce();
     //layer on growing up the tree for 3 seconds on the activated side
     //do the grow up tree routine
-    for (int i = 0; i < startActiveTime / 50; ++i) {
+    for (int i = 0; i < (millis() - startActiveTime) / 50; ++i) {
       if (activeSensor == 1 ||  activeSensor == 2) {
         leds[i+120] = CHSV(floor(256/60) * i, 255,255); //branch 3
         leds[239-i] = CHSV(floor(256/60) * i, 255,255); //branch 4
@@ -21,7 +21,23 @@ void activePattern() {
         leds[i+240] = CHSV(floor(256/60) * i, 255,255); //branch 5
         leds[359-i] = CHSV(floor(256/60) * i, 255,255); //branch 6
       }
-      if (random8(10) == 1) leds[i] = CRGB::White; //twinkle the leading LED
+    }
+    //twinkle the leading LED
+    if (random8(3) == 1) { 
+      int lastLED = (millis() - startActiveTime) / 50 - 1;
+      if (lastLED < 0) lastLED = 0; //just in case
+      if (activeSensor == 1 ||  activeSensor == 2) {
+          leds[lastLED+120] = CRGB::White; //twinkle the leading LED
+          leds[239-lastLED] = CRGB::White; //twinkle the leading LED
+      }
+      if (activeSensor == 3 ||  activeSensor == 1) {
+        leds[lastLED] = CRGB::White; //twinkle the leading LED
+        leds[119-lastLED] = CRGB::White; //twinkle the leading LED
+      }
+      if (activeSensor == 2 ||  activeSensor == 3) {
+          leds[lastLED+240] = CRGB::White; //twinkle the leading LED
+          leds[359-lastLED] = CRGB::White; //twinkle the leading LED
+      }      
     }
   } else {
     //what do we do after fully active?
@@ -75,9 +91,9 @@ void blueSpruce() {
   for (int i=0;i<NUM_LEDS; ++i) {
     //the random blue tint is to make it shimmer
     if (random8(10)==1) {
-      leds[i] = CHSV(2, 255, 32); //blueish
+      leds[i] = CHSV(93, 255, 32); //blueish
     } else {
-      leds[i] = CHSV(47, 255, 32); //greenish
+      leds[i] = CHSV(40, 255, 32); //greenish
     }
     
   }

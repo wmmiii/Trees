@@ -1,4 +1,4 @@
-const char* serverClock = "http://192.168.4.1/clock";
+// const char* serverClock = "http://192.168.4.1/clock";
 
 bool gotCommand() {
   //check to see if there's a command for this tree on the wifi buffer
@@ -10,15 +10,15 @@ bool gotCommand() {
 
 }
 
-//sets global clockOffset
-void getClockOffset() {
-  // if(WiFi.status()== WL_CONNECTED ){ 
-  //   String serverMillis = httpGETRequest(serverClock);
-  //   if (isValidNumber(serverMillis)) {
-  //     clockOffset =  serverMillis.toInt() - millis();
-  //   }
-  // } 
-}
+// //sets global clockOffset
+// void getClockOffset() {
+//   // if(WiFi.status()== WL_CONNECTED ){ 
+//   //   String serverMillis = httpGETRequest(serverClock);
+//   //   if (isValidNumber(serverMillis)) {
+//   //     clockOffset =  serverMillis.toInt() - millis();
+//   //   }
+//   // } 
+// }
 
 void tellForest(String msg) {
   sendMessage(msg);
@@ -43,7 +43,7 @@ void sendMessage(String status)
   String msg;
   serializeJson(doc, msg); //
   mesh.sendBroadcast( msg );
-  Serial.println("Message from Node2");
+  Serial.println("Message ");
   Serial.println(msg);
 }
 
@@ -60,7 +60,7 @@ void receivedCallback( uint32_t from, String &msg ) {
     Serial.println(error.c_str());
   } else {
     if (doc["status"] == "ACTIVATED") {
-      uint32_t treeNumber = from; //TODO
+      int treeNumber = getTreeIndexByNodeId(from);
       if (treeNumber > 0 && treeNumber <= 25) {
         Serial.printf("Tree Activated: %d\n", treeNumber);
         forestState[treeNumber] = true;
@@ -71,7 +71,7 @@ void receivedCallback( uint32_t from, String &msg ) {
     }
     if (doc["status"] == "DEACTIVATED") {
       //get the ID of the node sending the data and translate that to the tree index
-      uint32_t treeNumber = from; //TODO
+      int treeNumber = getTreeIndexByNodeId(from);
       if (treeNumber > 0 && treeNumber <= 25) {
         Serial.printf("Tree Deactivated: %d\n", treeNumber);
         forestState[treeNumber] = false;
@@ -80,9 +80,15 @@ void receivedCallback( uint32_t from, String &msg ) {
     }
     if (doc["status"] == "IMATREE") {
       //tree checking in to say they alive
+      Serial.printf("\nIMATREE %i", from);
       int theTree = getTreeIndexByNodeId(from);
       if (theTree < NUM_TREES) {
         forestLastAlive[theTree] = millis();
+        Serial.printf("\n..Tree %i", theTree);
+      } else {
+        //this tree needs added
+        addNewTree(from);
+        Serial.printf("\nAdding");
       }
     }
   }
@@ -98,22 +104,26 @@ void ImAlive(){
 void newConnectionCallback(uint32_t nodeId) {
   Serial.printf("--> startHere: New Connection, nodeId = %u\n", nodeId);
   //a tree has connected
+  addNewTree(nodeId);
+}
+void addNewTree(uint32_t nodeId) {
   //do we already have this tree in the node table?
   bool gotTree = false;
   int nextSlot = NUM_TREES + 1;
-  for (int i = 0; i < NUM_TREES; ++i){
+  for (int i = 1; i < NUM_TREES; ++i){
     if (forestNodes[i] == nodeId) {
       //already have it, just update last alive time
       forestLastAlive[i] = millis();
       gotTree = true;
     } 
     //check for the next empty slot
-    if (forestNodes[i] == 0 && nextSlot < NUM_TREES) {
+    if (forestNodes[i] == 0 && nextSlot > NUM_TREES) {
       nextSlot = i;
     }
-    if (!gotTree) {
+    if (!gotTree && nextSlot < NUM_TREES) {
       //new tree, welcome to the forest
       forestNodes[nextSlot] = nodeId;
+      Serial.printf("\nTree %i added\n", nextSlot);
     }
   }
 }

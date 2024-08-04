@@ -1,6 +1,6 @@
 //prune any tree from the forest that hasn't talked in 5 minutes
 void pruneForest() {
-  for (int i = 0; i < NUM_TREES; ++i) {
+  for (int i = 1; i < NUM_TREES; ++i) {
     if (forestLastAlive[i] < millis() - 300000) {
       //he's dead Jim, remove the node
       forestNodes[i] = 0;
@@ -11,11 +11,12 @@ void pruneForest() {
 //return the total number of tree that are currently alive (active nodes)
 int aliveTreesCount() {
   int aliveTrees = 0;
-  for (int i = 0; i < NUM_TREES; ++i) {
-    if (forestNodes[i] > 0) {
+  for (int i = 1; i < NUM_TREES; ++i) {
+    if (forestNodes[i] != 0) {
       ++aliveTrees;
     }
   }
+  ++aliveTrees; //because this tree is also alive
   return aliveTrees;
 } 
 
@@ -27,7 +28,7 @@ int getTreeIndexByNodeId(uint32_t nodeID) {
       theID = i;
     }
   }
-  return theID;
+  return theID+1;
 }
 
 //check the forestState array to see if all the trees are active
@@ -37,8 +38,12 @@ void checkForest() {
   int numberOfActiveTrees = 0;
   int numberOfLiveTrees = aliveTreesCount();
   for (int i=1; i <= NUM_TREES; ++i) {
-    if (!forestState[i]) ++numberOfActiveTrees;
+    if (forestState[i] == true) {
+      ++numberOfActiveTrees;
+      //Serial.println(i);
+    }
   }
+  Serial.printf("\nnumberOfActiveTrees %i, numberOfLiveTrees %i", numberOfActiveTrees, numberOfLiveTrees);
   //save the forest state to the 0 array position
   if (numberOfActiveTrees >= numberOfLiveTrees) {
     //party time, is this a new state?
@@ -58,10 +63,19 @@ void checkForest() {
 void activateForest() {
   //tree will join forest activation on even 5 seconds
   //first shut off LEDs
-  pullTime = millis();
+  // pullTime = millis();
+  long temp = mesh.getNodeTime() / 1000000L;
+  temp = temp / 5;
+  temp = temp * 5 * 1000000L + 5000000L;
+  activateTime = temp;// 5 to 10 seconds from now on a second divisible by 5;
   treeState = DRAW;  
 }
 
+void clearForestActivity() {
+  for (int i = 0; i < NUM_TREES; ++i) {
+    forestState[i] = false;
+  }
+}
 
 int nextState(long seed) {
   return (seed % FORESTPATTERENS) + 4 ;

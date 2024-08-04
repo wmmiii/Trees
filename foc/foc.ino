@@ -43,9 +43,13 @@ long startActiveTime = 0;
 long lastActiveTime = 0;
 int activeSensor = 1;  //must be 1, 2, or 3
 long pullTime = 0;
+long activateTime = 0;
 
 long clockOffset = 0;
 long lastSensor = 0;
+long lastImAlive = 0;
+long lastPruneForest = 0;
+long lastCheckForest = 0;
 
 #define NUM_TREES 25
 bool forestState[NUM_TREES + 1]; //forestState[0] is the collective forest state
@@ -70,7 +74,7 @@ void setup() {
 
 
 
-  FastLED.addLeds<WS2812B, DATA_PIN, RBG>(leds, NUM_LEDS);
+  FastLED.addLeds<WS2812B, DATA_PIN, GBR>(leds, NUM_LEDS);
   //  FastLED.addLeds<SK9822, DATA_PIN, CLOCK_PIN, BGR>(leds, NUM_LEDS);
 
   //This is where the power is regulated.  These pebble lights are kinda weird, so it will be some trial an error....
@@ -91,6 +95,7 @@ void setup() {
     forestLastAlive[i] = 0;
   }
   forestState[NUM_TREES] = false; //one extra in this guy
+  forestNodes[0] = 1; //this tree
 
   leds[0] = CRGB::Blue;
   FastLED.show();
@@ -98,7 +103,7 @@ void setup() {
   masterHue = 0;
 
   //set the clock offset
-  getClockOffset();
+  // getClockOffset();
 }
 
 void loop() { 
@@ -106,20 +111,24 @@ void loop() {
   mesh.update();
 
   //set the clock offset incase it isn't set
-  if (clockOffset == 0) getClockOffset();
+  //if (clockOffset == 0) getClockOffset();
 
   // LED pattern 
-  if (millis() < 1000 * 60 * 15) testPattern(); //first 15 seconds
-  if (treeState <= ACTIVATING) blueSpruce();
-  if (treeState == ACTIVATED) activePattern();
-  if (treeState == DRAW) darkForest();
+  if (millis() < 1000 * 15) {
+    // Serial.println(millis());
+    testPattern(); //first 15 seconds
+  } else {
+    if (treeState <= ACTIVATING) blueSpruce();
+    if (treeState == ACTIVATED) activePattern();
+    if (treeState == DRAW) darkForest();
 
-  if (treeState == ROTATE) patternRotate();
-  if (treeState ==  SPARKLE) patternSparkle();
-  if (treeState ==  STROBE) patternStrobe();
-  if (treeState == COLORFUL) patternColorful();
-  if (treeState == FIRE) patternFire();
-  if (treeState == GRADIENTWIPE) gradientWipe();
+    if (treeState == ROTATE) patternRotate();
+    if (treeState ==  SPARKLE) patternSparkle();
+    if (treeState ==  STROBE) patternStrobe();
+    if (treeState == COLORFUL) patternColorful();
+    if (treeState == FIRE) patternFire();
+    if (treeState == GRADIENTWIPE) gradientWipe();
+  }
 
   FastLED.show();
 
@@ -130,26 +139,40 @@ void loop() {
 
   //trigger activation on 5 second network time
   long meshTime = mesh.getNodeTime();
-  if (meshTime % 10000000 && pullTime > millis() - 5000) {
+  if (meshTime > activateTime) {
     if (treeState == DRAW) {
       //activate
-      treeState = nextState(meshTime); //this function will know what to do
+      long seed = meshTime / 10000000;
+      treeState = nextState(seed); //this function will know what to do
+      Serial.println("Start Party");
+      Serial.println(treeState);
+      pullTime = millis();
+    }
+    //shut down after 30 seconds
+    if (treeState > DRAW && (pullTime < millis() - 30000)) {
+      Serial.println("Party Over");
+       treeState = DEFAULT;
+       forestState[0] = false;
+       clearForestActivity();
     }
   }
 
   //brodcast IMATREE every 120 seconds
-  if (millis() % 120000 == 0) {
+  if (millis() - lastImAlive > 120000) {
     ImAlive();
+    lastImAlive = millis();
   }
 
   //prune forest every 5 minutes
-  if (millis() % 300000 == 0) {
+  if (millis() - lastPruneForest > 300000) {
     pruneForest();
+    lastPruneForest = millis();
   }
 
   //check to see if the forest is active every 500ms
-  if (millis() % 500 == 0) {
+  if (millis() - lastCheckForest > 500) {
     checkForest();
+    lastCheckForest = millis();
   }
 
   // *check for sensor detection every 200ms
@@ -177,6 +200,7 @@ void loop() {
         treeState = ACTIVATING;
       } else if (treeState == ACTIVATING) {
         treeState = ACTIVATED;
+        forestState[1] = true;
         tellForest("ACTIVATED");
         startActiveTime = millis();
         lastActiveTime = millis();
@@ -188,6 +212,12 @@ void loop() {
       //treeState = 0;
       if (treeState == ACTIVATING) treeState = DEFAULT;
     }
+    //expire activation
+    if (treeState == ACTIVATED && lastActiveTime < millis() - 3000) {
+      treeState = DEFAULT;
+      tellForest("DEACTIVATED");
+      forestState[1]=false;
+    }
     lastSensor = millis();
   }
 
@@ -195,12 +225,13 @@ void loop() {
   if (treeState == ACTIVATED && millis() - lastActiveTime > activeTimeout) {
     //go back to inacctive
     treeState = DEFAULT;
+    forestState[1] = false;
     tellForest("DEACTIVATED");
     //should this tree state change be reported to other trees?
 
   }
   
-  delay(10);
+  // delay(10);
   
   ++offset;
   if (offset>=NUM_LEDS) offset = 0;
