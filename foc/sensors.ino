@@ -3,19 +3,19 @@ byte gotSensor() {
   //gotta kinda debounce this a little too.
   //keep track of detection, time since last detection, and distance
 
-  int trigPin[3] = {TRIG_PIN1,TRIG_PIN2,TRIG_PIN3};
-  int echoPin[3] = {ECHO_PIN1,ECHO_PIN2,ECHO_PIN3};
+  int trigPin[3] = { TRIG_PIN1, TRIG_PIN2, TRIG_PIN3 };
+  int echoPin[3] = { ECHO_PIN1, ECHO_PIN2, ECHO_PIN3 };
 
   // 1: sensor 1, 2: sensor 2, 3: sensor 1 & 2
   // 4: sensor 3, 5: sensor 1 & 3, 6: sensor 2 & 3, 7: all
-  byte results = 0; 
+  byte results = 0;
 
-  for (int i=0; i<3; ++i) {
+  for (int i = 0; i < 3; ++i) {
 
     digitalWrite(13, LOW);
     delayMicroseconds(2);
 
-    digitalWrite(trigPin[i], HIGH); 
+    digitalWrite(trigPin[i], HIGH);
     delayMicroseconds(10);
     digitalWrite(trigPin[i], LOW);
 
@@ -32,7 +32,7 @@ byte gotSensor() {
     // Note: the micros() counter will overflow after ~70 min
 
     pulse_width = pulseIn(echoPin[i], HIGH, 15000);
-    
+
     inches = pulse_width / 148.0;
     //  Serial.println(pulse_width);
     // Serial.println(inches);
@@ -49,7 +49,6 @@ byte gotSensor() {
   }
   // Serial.println(results);
   return results;
-
 }
 
 // //update the array where we are keeping track of what trees are active
@@ -57,7 +56,7 @@ byte gotSensor() {
 //   forestState[_treeNumber] = _treeState;
 //   //check to see if hte whole forest is active
 //   int _thisTree = 1;
-//   forestState[0] = false; 
+//   forestState[0] = false;
 //   while (forestState[_thisTree]) {
 //     ++_thisTree;
 //     if (_thisTree > NUM_TREES) {
