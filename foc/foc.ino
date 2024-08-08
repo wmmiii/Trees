@@ -13,7 +13,9 @@ painlessMesh mesh;
 #define TREE_NUMBER 1  //each tree is numbered in order based on where it is located
 #define DETECTINCHES 12
 
-#define NUM_LEDS 360  //?? LEDs per branch
+#define SIDE_LENGTH 60
+#define BRANCH_LENGTH SIDE_LENGTH * 2
+#define NUM_LEDS SIDE_LENGTH * 3
 
 #define DATA_PIN 23
 #define CLOCK_PIN 18
@@ -119,22 +121,22 @@ void loop() {
   // gradientWipe();
 
   // LED pattern
-  if (millis() < 1000 * 15) {
-    // Serial.println(millis());
-    testPattern();  //first 15 seconds
-  } else {
+  // if (millis() < 1000 * 15) {
+  //   // Serial.println(millis());
+  //   testPattern();  //first 15 seconds
+  // } else {
 
-    if (treeState <= ACTIVATING) blueSpruce();
-    if (treeState == ACTIVATED) activePattern();
-    if (treeState == DRAW) darkForest();
+  //   if (treeState <= ACTIVATING) blueSpruce();
+  //   if (treeState == ACTIVATED) activePattern();
+  //   if (treeState == DRAW) darkForest();
 
-    if (treeState == ROTATE) patternRotate();
-    if (treeState == SPARKLE) patternSparkle();
-    if (treeState == STROBE) patternStrobe();
-    if (treeState == COLORFUL) patternColorful();
-    if (treeState == FIRE) patternFire();
-    if (treeState == GRADIENTWIPE) gradientWipe();
-  }
+  //   if (treeState == ROTATE) patternRotate();
+  //   if (treeState == SPARKLE) patternSparkle();
+  //   if (treeState == STROBE) patternStrobe();
+  //   if (treeState == COLORFUL) patternColorful();
+  //   if (treeState == FIRE) patternFire();
+  //   if (treeState == GRADIENTWIPE) gradientWipe();
+  // }
 
   FastLED.show();
 
