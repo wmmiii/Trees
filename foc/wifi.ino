@@ -1,11 +1,10 @@
 bool gotCommand() {
   //check to see if there's a command for this tree on the wifi buffer
   //if command {
-    //return true;
+  //return true;
   //} else {
-    return false;
+  return false;
   //}
-
 }
 
 void tellForest(String msg) {
@@ -13,45 +12,45 @@ void tellForest(String msg) {
 }
 
 
-void sendMessage(String status)
-{
-  
+void sendMessage(String status) {
+
   Serial.println();
   Serial.println("Start Sending....");
-  
+
   // Serialize the message
   DynamicJsonDocument doc(1024);
-  doc["status"] = status; 
+  doc["status"] = status;
   String msg;
-  serializeJson(doc, msg); //
-  mesh.sendBroadcast( msg );
+  serializeJson(doc, msg);  //
+  mesh.sendBroadcast(msg);
   Serial.println("Message ");
   Serial.println(msg);
 }
 
 void sendParty(int stateNumber) {
   Serial.println("Announcing Party Mode");
-  
+
   // Serialize the message
   DynamicJsonDocument doc(1024);
-  doc["status"] = "PARTY"; 
+  doc["status"] = "PARTY";
   doc["state"] = String(stateNumber);
   String msg;
-  serializeJson(doc, msg); //
-  mesh.sendBroadcast( msg );
+  serializeJson(doc, msg);
+  mesh.sendBroadcast(msg);
   Serial.println("Message ");
   Serial.println(msg);
 }
 
 // Deserialize the message
-void receivedCallback( uint32_t from, String &msg ) {
+void receivedCallback(uint32_t from, String &msg) {
 
-  Serial.println("Message ="); Serial.println(msg);
-  String json = msg.c_str();;
+  Serial.println("Message =");
+  Serial.println(msg);
+  String json = msg.c_str();
+  ;
   DynamicJsonDocument doc(1024);
   DeserializationError error = deserializeJson(doc, json);
-  if (error)
-  {
+  if (error) {
     Serial.print("deserializeJson() failed: ");
     Serial.println(error.c_str());
   } else {
@@ -104,7 +103,7 @@ void receivedCallback( uint32_t from, String &msg ) {
   }
 }
 
-void ImAlive(){
+void ImAlive() {
   //send IMATREE
   sendMessage("IMATREE");
 }
@@ -120,12 +119,12 @@ void addNewTree(uint32_t nodeId) {
   //do we already have this tree in the node table?
   bool gotTree = false;
   int nextSlot = NUM_TREES + 1;
-  for (int i = 1; i < NUM_TREES; ++i){
+  for (int i = 1; i < NUM_TREES; ++i) {
     if (forestNodes[i] == nodeId) {
       //already have it, just update last alive time
       forestLastAlive[i] = millis();
       gotTree = true;
-    } 
+    }
     //check for the next empty slot
     if (forestNodes[i] == 0 && nextSlot > NUM_TREES) {
       nextSlot = i;
@@ -148,15 +147,15 @@ void nodeTimeAdjustedCallback(int32_t offset) {
 // String httpGETRequest(const char* serverName) {
 //   WiFiClient client;
 //   HTTPClient http;
-    
+
 //   // Your Domain name with URL path or IP address with path
 //   http.begin(client, serverName);
-  
+
 //   // Send HTTP POST request
 //   int httpResponseCode = http.GET();
-  
-//   String payload = "--"; 
-  
+
+//   String payload = "--";
+
 //   if (httpResponseCode>0) {
 //     Serial.print("HTTP Response code: ");
 //     Serial.println(httpResponseCode);

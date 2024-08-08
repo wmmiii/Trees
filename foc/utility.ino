@@ -16,9 +16,9 @@ int aliveTreesCount() {
       ++aliveTrees;
     }
   }
-  ++aliveTrees; //because this tree is also alive
+  ++aliveTrees;  //because this tree is also alive
   return aliveTrees;
-} 
+}
 
 //function will return the index of the forestNode or NUM_TREES if not found
 int getTreeIndexByNodeId(uint32_t nodeID) {
@@ -28,16 +28,16 @@ int getTreeIndexByNodeId(uint32_t nodeID) {
       theID = i;
     }
   }
-  return theID+1;
+  return theID + 1;
 }
 
 //check the forestState array to see if all the trees are active
-//to account for the possibility of a tree being offline, 
+//to account for the possibility of a tree being offline,
 // the forest will activate then the number of trees that are connected to the mesh = active trees
 void checkForest() {
   int numberOfActiveTrees = 0;
   int numberOfLiveTrees = aliveTreesCount();
-  for (int i=1; i <= NUM_TREES; ++i) {
+  for (int i = 1; i <= NUM_TREES; ++i) {
     if (forestState[i] == true) {
       ++numberOfActiveTrees;
       //Serial.println(i);
@@ -67,8 +67,8 @@ void activateForest() {
   long temp = mesh.getNodeTime() / 1000000L;
   temp = temp / 5;
   temp = temp * 5 * 1000000L + 5000000L;
-  activateTime = temp;// 5 to 10 seconds from now on a second divisible by 5;
-  treeState = DRAW;  
+  activateTime = temp;  // 5 to 10 seconds from now on a second divisible by 5;
+  treeState = DRAW;
 }
 
 void clearForestActivity() {
@@ -78,12 +78,12 @@ void clearForestActivity() {
 }
 
 int nextState(long seed) {
-  return (seed % FORESTPATTERENS) + 4 ;
+  return (seed % FORESTPATTERENS) + 4;
 }
 
-boolean isValidNumber(String str){
-  for(byte i=0;i<str.length();i++) {
-    if(isDigit(str.charAt(i))) return true;
+boolean isValidNumber(String str) {
+  for (byte i = 0; i < str.length(); i++) {
+    if (isDigit(str.charAt(i))) return true;
   }
   return false;
 }
