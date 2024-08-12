@@ -46,7 +46,7 @@ inline uint16_t randomBranchTime(int branch) {
  * @returns The theta value. Range [0, 65536]
  */
 inline uint16_t treeTheta(uint16_t time) {
-  return (((TREE_NUMBER - 1) * MAX_UINT16) / min(aliveTreesCount(), 1) - time) % MAX_UINT16;
+  return (((TREE_NUMBER - 1) * MAX_UINT16) / max(aliveTreesCount(), 1) - time) % MAX_UINT16;
 }
 
 /**
@@ -320,7 +320,6 @@ void patternPsychedellic() {
         b * 6899 + TREE_NUMBER * 7561 + t / 2);
 
       setBranchLed(b, i, ColorFromPalette(palette, noise, 255, LINEARBLEND_NOWRAP));
-      // setBranchLed(b, i, CHSV(noise, 255, 255));
     }
   }
 }
@@ -386,5 +385,35 @@ void patternRoundTheTrees() {
         treeTheta(theClock() * 8) / 256,
         255,
         brightness / 256));
+  }
+}
+
+//Racing lights around the trees
+void patternRacingLightsAroundTheTrees() {
+  // The lights to include in this pattern.
+  const CRGB colors[] = {
+    CHSV((0 + startActiveTime) % 256, 255, 255),
+    CHSV((65 + startActiveTime) % 256, 255, 255),
+    CHSV((130 + startActiveTime) % 256, 255, 255),
+    CHSV((230 + startActiveTime) % 256, 255, 255)
+  };
+  static const uint8_t colorSpeeds[] = { 53, 43, 37, 23 };
+  static const uint8_t colorsSize = 4;
+  static const uint8_t SPREAD = 4;
+
+  uint8_t activeTrees = max(aliveTreesCount(), 1);
+  CRGB color = CRGB::Black;
+
+  for (int l = 0; l < colorsSize; ++l) {
+    // Figure out the position of each light.
+    const uint16_t lightPos = treeTheta(theClock() * colorSpeeds[l]) % MAX_UINT16;
+
+    const uint16_t intensity = max((lightPos - MAX_UINT16 + (MAX_UINT16 * SPREAD) / activeTrees) * activeTrees / SPREAD, 0L);
+
+    color = colorAddWithBloom(color, blend(CRGB::Black, colors[l], intensity / 256));
+  }
+
+  for (int i = 0; i < SIDE_LENGTH; ++i) {
+    setAllBranchLed(i, color);
   }
 }
